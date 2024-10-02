@@ -1,0 +1,12 @@
+# macOS-specific files
+.DS_Store
+
+# jetbrains setting folder
+.idea/
+
+# vs code setting folder
+.vscode/
+
+# virtual environment
+.venv/
+

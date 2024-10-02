@@ -1,0 +1,50 @@
+name: Update Hausing Scraper
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Run hourly
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests beautifulsoup4
+
+    - name: Run scraper script
+      run: |
+        python src/scraper.py
+
+    - name: Checkout GitHub Pages repo
+      uses: actions/checkout@v3
+      with:
+        repository: celestegambardella/celestegambardella.github.io
+        path: github_pages
+
+    - name: Copy markdown to GitHub Pages repo
+      run: |
+        cp output/hausing-scraper.md github_pages/src/content/work/hausing-scraper.md
+
+    - name: Commit and push changes to GitHub Pages repo
+      run: |
+        cd github_pages
+        git config --local user.email "celestegambardella.se@gmail.com"
+        git config --local user.name "GitHub Action"
+        current_time=$(date +"%Y-%m-%d %H:%M:%S")
+        git add src/content/work/hausing-scraper.md
+        git commit -m "Update Hausing Scraper results at $current_time"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
