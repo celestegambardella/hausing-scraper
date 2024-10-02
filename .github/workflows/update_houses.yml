@@ -47,8 +47,6 @@ jobs:
         cp src/output/hausing-scraper.md dist/src/content/work/hausing-scrapper.md
 
     - name: Commit changes to dev branch
-      with:
-        token: ${{ secrets.PAT_TOKEN }}
       run: |
         cd dist  # Change to the work directory
         git config --global user.email "celestegambardella.se@gmail.com"
