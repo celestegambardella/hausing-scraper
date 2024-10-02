@@ -10,41 +10,61 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    # Step 1: Checkout repository on 'dev' branch
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
+      with:
+        ref: dev  # Ensure we are working on the 'dev' branch
 
+    # Step 2: Set up Python
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.x'
+        python-version: '3.12.6'
 
+    # Step 3: Install dependencies
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install requests beautifulsoup4
 
+    # Step 4: Run scraper script
     - name: Run scraper script
       run: |
         python src/scraper.py
 
-    - name: Checkout GitHub Pages repo
-      uses: actions/checkout@v3
-      with:
-        repository: celestegambardella/celestegambardella.github.io
-        path: github_pages
-
-    - name: Copy markdown to GitHub Pages repo
+    # Step 5: Copy HTML output to the appropriate path
+    - name: Copy HTML output
       run: |
-        cp output/hausing-scraper.md github_pages/src/content/work/hausing-scraper.md
+        cp output/hausing-scraper.html work/hausing-scraper.html
 
-    - name: Commit and push changes to GitHub Pages repo
+    # Step 6: Commit and push changes to the 'dev' branch
+    - name: Commit and push changes to dev
       run: |
-        cd github_pages
         git config --local user.email "celestegambardella.se@gmail.com"
         git config --local user.name "GitHub Action"
+        git add work/hausing-scraper.html
         current_time=$(date +"%Y-%m-%d %H:%M:%S")
-        git add src/content/work/hausing-scraper.md
         git commit -m "Update Hausing Scraper results at $current_time"
-        git push
+        git push origin dev
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # Step 7: Create a pull request from 'dev' to 'prod' branch
+    - name: Create pull request
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        branch: dev  # Source branch
+        base: prod  # Target branch
+        title: "Update Hausing Scraper results"
+        body: "Automated update of Hausing Scraper results."
+        draft: false  # Set to true if you want the PR as a draft
+
+    # Optional Step 8: Automatically merge the pull request (Optional)
+    - name: Merge pull request
+      if: ${{ github.event_name == 'schedule' }}  # Only merge on scheduled runs
+      uses: actions-ecosystem/action-merge-pull-requests@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        merge_method: merge
