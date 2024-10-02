@@ -53,7 +53,7 @@ jobs:
         current_time=$(date +"%Y-%m-%d %H:%M:%S")
         git add src/content/work/hausing-scrapper.md
         git commit -m "Update Hausing Scraper results at $current_time"
-        git push origin dev
+        git push https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/celestegambardella/celestegambardella.github.io.git dev
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
