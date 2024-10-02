@@ -48,8 +48,8 @@ jobs:
     - name: Commit changes to dev branch
       run: |
         cd dist  # Change to the work directory
-        git config --global user.email "you@example.com"  # Replace with your email
-        git config --global user.name "Your Name"  # Replace with your name
+        git config --global user.email "celestegambardella.se@gmail.com"
+        git config --global user.name "celestegambardella"
         current_time=$(date +"%Y-%m-%d %H:%M:%S")
         git add src/content/work/hausing-scrapper.md
         git commit -m "Update Hausing Scraper results at $current_time"
