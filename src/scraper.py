@@ -13,7 +13,7 @@ BASE_DIR = os.getcwd()
 # OUTPUT_DIR = os.path.join(BASE_DIR, 'output')
 # JSON_FILE_PATH = os.path.join(OUTPUT_DIR, 'houses.json')
 # MD_FILE_PATH = os.path.join(OUTPUT_DIR, 'hausing-scraper.md')
-OUTPUT_DIR = "/hausing-scraper/src/output/"
+OUTPUT_DIR = "src/output/"
 JSON_FILE_PATH = OUTPUT_DIR + "houses.json"
 MD_FILE_PATH = OUTPUT_DIR + "hausing-scraper.md"
 

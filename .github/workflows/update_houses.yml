@@ -35,15 +35,19 @@ jobs:
       with:
         repository: celestegambardella/celestegambardella.github.io
         ref: dev  # Checkout the dev branch
-        path: src  # This checks out the GitHub Pages repo to the "work" directory
+        path: dist  # This checks out the GitHub Pages repo to the "work" directory
+
+    - name: List output directory
+      run: |
+        ls -la src/output/
 
     - name: Copy markdown to GitHub Pages repo
       run: |
-        cp src/output/hausing-scraper.md src/content/work/hausing-scrapper.md
+        cp src/output/hausing-scraper.md dist/src/content/work/hausing-scrapper.md
 
     - name: Commit changes to dev branch
       run: |
-        cd src
+        cd dist
         git checkout dev
         current_time=$(date +"%Y-%m-%d %H:%M:%S")
         git add src/content/work/hausing-scrapper.md
