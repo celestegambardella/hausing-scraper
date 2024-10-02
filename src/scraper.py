@@ -7,6 +7,11 @@ from datetime import datetime
 import json
 import os
 
+# Define base directories
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+OUTPUT_DIR = os.path.join(BASE_DIR, 'output')
+JSON_FILE_PATH = os.path.join(OUTPUT_DIR, 'houses.json')
+MD_FILE_PATH = os.path.join(OUTPUT_DIR, 'hausing-scraper.md')
 
 def get_addresses(address_divs):
     addresses = []
@@ -26,12 +31,10 @@ def get_prices(price_paragraphs):
     # Filter out the numeric price paragraphs
     for price in price_paragraphs:
         text = price.get_text(strip=True)
-        # Try to convert to float to check if it's a numeric value
-        try:
-            float(text)  # This will succeed for numeric values
-            prices.append(text)
-        except ValueError:
-            continue  # Ignore non-numeric values
+        # Remove currency symbols and commas
+        cleaned_price = ''.join(filter(str.isdigit, text))
+        if cleaned_price:
+            prices.append(cleaned_price)
 
     return prices
 
@@ -122,8 +125,11 @@ def load_existing_houses(file_name='houses.json'):
         return {}
 
 
-def update_markdown(new_houses, existing_data, md_file_path='../output/hausing-scraper.md'):
-    # Additionally, write results to Markdown for GitHub Pages
+def update_markdown(new_houses, existing_data, md_file_path=MD_FILE_PATH):
+    # Ensure the output directory exists
+    output_dir = os.path.dirname(md_file_path)
+    os.makedirs(output_dir, exist_ok=True)
+
     with open(md_file_path, 'w') as md_file:
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         md_file.write(f"---\n")
@@ -142,20 +148,17 @@ def update_markdown(new_houses, existing_data, md_file_path='../output/hausing-s
             for address, details in new_houses.items():
                 md_file.write(f"- **{address}**: €{details['price']}/month - [View Property]({details['url']})\n")
         else:
-            md_file.write(f"\n## Apartments\n")
-            for address, details in existing_data.items():
-                md_file.write(f"- {address}: €{details['price']}/month - [View Property]({details['url']})\n")
-            print(f"Displaying {len(existing_data)} existing houses.")
-
-        # Always print the existing houses
-        if existing_data is None:
-            md_file.write(f"\n## No New or Previously Found Houses\n")
+            md_file.write(f"\n## No New Listings Found\n")
 
         md_file.write(f"---\n`{short_time}`")
         md_file.write(f"\n###### [Source Code](https://github.com/celestegambardella/hausing-scraper)\n")
 
 
-def update_houses(new_data, json_file_path='../output/houses.json'):
+def update_houses(new_data, json_file_path=JSON_FILE_PATH, output_file_path=MD_FILE_PATH):
+    # Ensure the output directory exists
+    output_dir = os.path.dirname(output_file_path)
+    os.makedirs(output_dir, exist_ok=True)
+
     try:
         with open(json_file_path, 'r') as fp:
             existing_data = json.load(fp)
@@ -165,14 +168,12 @@ def update_houses(new_data, json_file_path='../output/houses.json'):
     # Find new houses by checking if the address exists in the current data
     new_houses = {addr: details for addr, details in new_data.items() if addr not in existing_data}
 
-
     print(f"Found {len(new_houses)} new houses:")
     for address, details in new_houses.items():
         print(f"New Appartment: {address}, Price: {details['price']}, URL: {details['url']}")
 
     # Update existing data with new houses
     existing_data.update(new_houses)
-
     update_markdown(new_houses, existing_data)
 
     print("Markdown and JSON files updated with new listings.")
@@ -185,6 +186,8 @@ def update_houses(new_data, json_file_path='../output/houses.json'):
 
 
 def main():
+    print("Current Working Directory:", os.getcwd())
+
     url = "https://www.hausing.com/properties-for-rent-amsterdam?sort-asc=price"
     max_price = 2650
     new_houses = get_houses(url, max_price)
