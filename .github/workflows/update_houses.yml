@@ -58,32 +58,24 @@ jobs:
 
       # Step to create a pull request from dev to prod
     - name: Create Pull Request from dev to prod
-      uses: peter-evans/create-pull-request@v5
+      id: housing_pr  # Add an ID to this step to reference its output
+      uses: peter-evans/create-pull-request@v7
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         base: prod  # Target branch to merge into
-        head: dev  # Source branch to merge from
-        title: 'Automated Update from dev to prod'
+        branch: dev  # Source branch to merge from
+        title: 'Automated Update from dev to prod for Housing Script'
         body: 'This is an automated pull request to merge changes from dev to prod.'
 
-    # Optionally merge the pull request automatically if you want
     - name: Merge PR to prod branch
       uses: actions/github-script@v7
       with:
         script: |
-          const { data: pullRequests } = await github.pulls.list({
+          const pullRequestNumber = ${{ steps.housing_pr.outputs.pull_request_number }}; // Get the created PR number
+          await github.pulls.merge({
             owner: context.repo.owner,
             repo: context.repo.repo,
-            state: 'open',
-            head: 'dev',
+            pull_number: pullRequestNumber,
           });
-
-          if (pullRequests.length > 0) {
-            await github.pulls.merge({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: pullRequests[0].number,
-            });
-          }
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
