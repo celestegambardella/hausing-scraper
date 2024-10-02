@@ -9,7 +9,7 @@ import json
 import os
 
 # Define base directories
-# BASE_DIR = os.getcwd()
+BASE_DIR = os.getcwd()
 # OUTPUT_DIR = os.path.join(BASE_DIR, 'output')
 # JSON_FILE_PATH = os.path.join(OUTPUT_DIR, 'houses.json')
 # MD_FILE_PATH = os.path.join(OUTPUT_DIR, 'hausing-scraper.md')
@@ -190,7 +190,7 @@ def update_houses(new_data, json_file_path=JSON_FILE_PATH, output_file_path=MD_F
 
 
 def main():
-    # print("Current Working Directory:", BASE_DIR)
+    print("Current Working Directory:", BASE_DIR)
     print("Output Directory:", OUTPUT_DIR)
     print("Output Directory:", JSON_FILE_PATH)
     print("Output Directory:", MD_FILE_PATH)
