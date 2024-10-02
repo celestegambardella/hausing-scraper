@@ -54,8 +54,6 @@ jobs:
         git add src/content/work/hausing-scrapper.md
         git commit -m "Update Hausing Scraper results at $current_time"
         git push https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/celestegambardella/celestegambardella.github.io.git dev
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Step to create a pull request from dev to prod
     - name: Create Pull Request from dev to prod
