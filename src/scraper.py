@@ -1,85 +1,202 @@
-name: Update Hausing Scraper
+#!/usr/bin/env python
 
-on:
-  schedule:
-    - cron: '0 * * * *'  # Run hourly
-  workflow_dispatch:  # Allow manual triggering
-  push:
-    branches:
-      - main  # Trigger on pushes to the main branch
+import requests
+from bs4 import BeautifulSoup
+from urllib.parse import urlparse
+from datetime import datetime
+import json
+import os
 
-jobs:
-  update:
-    runs-on: ubuntu-latest
+# Define base directories
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+OUTPUT_DIR = os.path.join(BASE_DIR, 'output')
+JSON_FILE_PATH = os.path.join(OUTPUT_DIR, 'houses.json')
+MD_FILE_PATH = os.path.join(OUTPUT_DIR, 'hausing-scraper.md')
 
-    steps:
-    - name: Checkout scraper repo
-      uses: actions/checkout@v4
+def get_addresses(address_divs):
+    addresses = []
+    if address_divs:
+        for idx, address_div in enumerate(address_divs, start=1):
+            # print(f"Address {idx}:", address_div.get_text(strip=True))
+            addresses.append(address_div.get_text(strip=True))
+    else:
+        print("No divs with class 'address' found.")
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12.6'
+    return addresses
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install requests beautifulsoup4
 
-    - name: Run scraper script
-      run: |
-        python src/scraper.py
+def get_prices(price_paragraphs):
+    prices = []
 
-    - name: Checkout GitHub Pages repo
-      uses: actions/checkout@v4
-      with:
-        repository: celestegambardella/celestegambardella.github.io
-        ref: dev  # Checkout the dev branch
-        path: src/  # This checks out the GitHub Pages repo to the "src" directory
+    # Filter out the numeric price paragraphs
+    for price in price_paragraphs:
+        text = price.get_text(strip=True)
+        # Remove currency symbols and commas
+        cleaned_price = ''.join(filter(str.isdigit, text))
+        if cleaned_price:
+            prices.append(cleaned_price)
 
-    - name: Copy markdown to GitHub Pages repo
-      run: |
-        cp src/output/hausing-scraper.md src/content/work/hausing-scrapper.md
+    return prices
 
-    - name: Commit changes to dev branch
-      run: |
-        cd work
-        git checkout dev
-        current_time=$(date +"%Y-%m-%d %H:%M:%S")
-        git add src/content/work/hausing-scrapper.md
-        git commit -m "Update Hausing Scraper results at $current_time"
-        git push origin dev
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    # Step to create a pull request from dev to prod
-    - name: Create Pull Request from dev to prod
-      uses: peter-evans/create-pull-request@v5
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        base: prod  # Target branch to merge into
-        head: dev  # Source branch to merge from
-        title: 'Automated Update from dev to prod'
-        body: 'This is an automated pull request to merge changes from dev to prod.'
+def create_property_urls(hostname, houses):
+    urls = []
 
-    # Optionally merge the pull request automatically if you want
-    - name: Merge PR to prod branch
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const { data: pullRequests } = await github.pulls.list({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            state: 'open',
-            head: 'dev',
-          });
+    base_url = "https://" + hostname + "/properties-for-rent-amsterdam/"
+    for house in houses:
+        url = base_url + house.lower().replace(" ", "-").replace(",", "")
+        urls.append(url)
 
-          if (pullRequests.length > 0) {
-            await github.pulls.merge({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: pullRequests[0].number,
-            });
-          }
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    return urls
+
+
+def get_house_status(house_availability):
+    statues = []
+    if house_availability:
+        for idx, status in enumerate(house_availability, start=1):
+            # print(f"Address {idx}:", address_div.get_text(strip=True))
+            statues.append(status.get_text(strip=True))
+    else:
+        print("No divs with class 'availability-caption-2' found.")
+
+    return statues
+
+
+def get_houses(url, max_price):
+    houses = {}
+    try:
+        # Send a GET request to the URL
+        response = requests.get(url)
+        response.raise_for_status()  # Raise an error for bad responses
+
+        # Parse the HTML content
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        # Find all divs with class "address"
+        address_divs = soup.find_all('div', class_='address')
+
+        # Find all p elements with class "availability-caption-2 text-gray availability"
+        house_availability = soup.find_all('p', class_='availability-caption-2')
+
+        # Find all p elements with class "price-text-small-5"
+        price_paragraphs = soup.find_all('p', class_='price-text-small-5')
+
+        # Get all addresses
+        addresses = get_addresses(address_divs)
+
+        # Get all prices
+        price_values = get_prices(price_paragraphs)
+
+        # Get all statuses
+        statues = get_house_status(house_availability)
+
+        # Get all urls
+        hostname = urlparse(url).netloc
+        urls = create_property_urls(hostname, addresses)
+
+        # Check if the number of addresses and prices match
+        if len(addresses) == len(price_values):
+            for idx, (address, price, status, url) in enumerate(zip(addresses, price_values, statues, urls), start=1):
+                if int(price) < max_price and status == "Available":
+                    # Construct the dict with houses available
+                    houses[address] = {
+                        "price": int(price),
+                        "url": url,
+                        "status": status,
+                    }
+        else:
+            print("The number of addresses and prices do not match.")
+
+    except requests.RequestException as e:
+        print(f"An error occurred: {e}")
+
+    return houses
+
+
+def load_existing_houses(file_name='houses.json'):
+    if os.path.exists(file_name):
+        with open(file_name, 'r') as fp:
+            try:
+                return json.load(fp)
+            except json.JSONDecodeError:
+                print("Error reading the JSON file.")
+                return {}
+    else:
+        return {}
+
+
+def update_markdown(new_houses, existing_data, md_file_path=MD_FILE_PATH):
+    # Ensure the output directory exists
+    output_dir = os.path.dirname(md_file_path)
+    os.makedirs(output_dir, exist_ok=True)
+
+    with open(md_file_path, 'w') as md_file:
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        md_file.write(f"---\n")
+        md_file.write(f"title: Hausing Scraper\n")
+        md_file.write(f"publishDate: {now}\n")
+        md_file.write(f"img: /assets/stock-2.jpg\n")
+        md_file.write(f"img_alt: A bright pink sheet of paper used to wrap flowers curves in front of rich blue background\n")
+        md_file.write(f"description: |\n")
+        md_file.write(f"  Python script that runs hourly and scrapes www.hausing.com for any new properties.\n")
+        md_file.write(f"tags:\n  - Dev\n  - Frontend\n  - Scripting\n")
+        md_file.write(f"---\n")
+
+        short_time = datetime.now().strftime('%b %d %Y %H:%M')
+        if new_houses:
+            md_file.write(f"\n### [New] Apartments\n")
+            for address, details in new_houses.items():
+                md_file.write(f"- **{address}**: €{details['price']}/month - [View Property]({details['url']})\n")
+        else:
+            md_file.write(f"\n## No New Listings Found\n")
+
+        md_file.write(f"---\n`{short_time}`")
+        md_file.write(f"\n###### [Source Code](https://github.com/celestegambardella/hausing-scraper)\n")
+
+
+def update_houses(new_data, json_file_path=JSON_FILE_PATH, output_file_path=MD_FILE_PATH):
+    # Ensure the output directory exists
+    output_dir = os.path.dirname(output_file_path)
+    os.makedirs(output_dir, exist_ok=True)
+
+    try:
+        with open(json_file_path, 'r') as fp:
+            existing_data = json.load(fp)
+    except (FileNotFoundError, json.JSONDecodeError):
+        existing_data = {}
+
+    # Find new houses by checking if the address exists in the current data
+    new_houses = {addr: details for addr, details in new_data.items() if addr not in existing_data}
+
+    print(f"Found {len(new_houses)} new houses:")
+    for address, details in new_houses.items():
+        print(f"New Appartment: {address}, Price: {details['price']}, URL: {details['url']}")
+
+    # Update existing data with new houses
+    existing_data.update(new_houses)
+    update_markdown(new_houses, existing_data)
+
+    print("Markdown and JSON files updated with new listings.")
+
+    # Write the updated data back to the JSON file
+    # Update the JSON file regardless of new data
+    existing_data.update(new_houses)
+    with open(json_file_path, 'w') as fp:
+        json.dump(existing_data, fp, indent=4)
+
+
+def main():
+    print("Current Working Directory:", os.getcwd())
+
+    url = "https://www.hausing.com/properties-for-rent-amsterdam?sort-asc=price"
+    max_price = 2650
+    new_houses = get_houses(url, max_price)
+
+    if new_houses:
+        update_houses(new_houses)
+    else:
+        print("No houses found within the price range.")
+
+
+if __name__ == "__main__":
+    main()

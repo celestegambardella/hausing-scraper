@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
+    - name: Checkout scraper repo
       uses: actions/checkout@v4
 
     - name: Set up Python
@@ -30,11 +30,23 @@ jobs:
       run: |
         python src/scraper.py
 
+    - name: Checkout GitHub Pages repo
+      uses: actions/checkout@v4
+      with:
+        repository: celestegambardella/celestegambardella.github.io
+        ref: dev  # Checkout the dev branch
+        path: src  # This checks out the GitHub Pages repo to the "work" directory
+
+    - name: Copy markdown to GitHub Pages repo
+      run: |
+        cp src/output/hausing-scraper.md src/content/work/hausing-scrapper.md
+
     - name: Commit changes to dev branch
       run: |
+        cd work
         git checkout dev
         current_time=$(date +"%Y-%m-%d %H:%M:%S")
-        git add output/hausing-scraper.md
+        git add src/content/work/hausing-scrapper.md
         git commit -m "Update Hausing Scraper results at $current_time"
         git push origin dev
       env:
