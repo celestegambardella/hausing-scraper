@@ -1,9 +1,9 @@
 name: Update Hausing Scraper
 
 on:
-  schedule:
-    - cron: '0 * * * *'  # Run hourly
-  workflow_dispatch:  # Allow manual triggering
+#  schedule:
+#    - cron: '0 * * * *'  # Run hourly
+#  workflow_dispatch:  # Allow manual triggering
   push:
     branches:
       - main  # Trigger on pushes to the main branch
@@ -33,6 +33,7 @@ jobs:
     - name: Checkout GitHub Pages repo
       uses: actions/checkout@v4
       with:
+        token: ${{ secrets.PAT_TOKEN }}
         repository: celestegambardella/celestegambardella.github.io
         ref: dev  # Checkout the dev branch
         path: dist  # This checks out the GitHub Pages repo to the "work" directory
@@ -46,6 +47,8 @@ jobs:
         cp src/output/hausing-scraper.md dist/src/content/work/hausing-scrapper.md
 
     - name: Commit changes to dev branch
+      with:
+        token: ${{ secrets.PAT_TOKEN }}
       run: |
         cd dist  # Change to the work directory
         git config --global user.email "celestegambardella.se@gmail.com"
