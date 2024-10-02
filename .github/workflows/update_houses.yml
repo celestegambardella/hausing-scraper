@@ -43,7 +43,7 @@ jobs:
 
     - name: Commit changes to dev branch
       run: |
-        cd work
+        cd src
         git checkout dev
         current_time=$(date +"%Y-%m-%d %H:%M:%S")
         git add src/content/work/hausing-scrapper.md
