@@ -48,7 +48,7 @@ jobs:
 
     - name: Commit changes to dev branch
       run: |
-        cd dist  # Change to the work directory
+        cd dist  # Change to the dist directory
         git config --global user.email "celestegambardella.se@gmail.com"
         git config --global user.name "celestegambardella"
         current_time=$(date +"%Y-%m-%d %H:%M:%S")
@@ -56,26 +56,41 @@ jobs:
         git commit -m "Update Hausing Scraper results at $current_time"
         git push https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/celestegambardella/celestegambardella.github.io.git dev
 
-      # Step to create a pull request from dev to prod
-    - name: Create Pull Request from dev to prod
-      id: housing_pr  # Add an ID to this step to reference its output
-      uses: peter-evans/create-pull-request@v7
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        base: prod  # Target branch to merge into
-        branch: dev  # Source branch to merge from
-        title: 'Automated Update from dev to prod for Housing Script'
-        body: 'This is an automated pull request to merge changes from dev to prod.'
 
-    - name: Merge PR to prod branch
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const pullRequestNumber = ${{ steps.housing_pr.outputs.pull_request_number }}; // Get the created PR number
-          await github.pulls.merge({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            pull_number: pullRequestNumber,
-          });
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Create Pull Request from dev to prod
+#      run: |
+#        cd dist  # Change to the dist directory
+#        git config --global user.email "celestegambardella.se@gmail.com"
+#        git config --global user.name "celestegambardella"
+#        current_time=$(date +"%Y-%m-%d %H:%M:%S")
+#        title="Update Hausing Scraper results at $current_time"
+#        gh pr create --base prod --head dev --label housing_pr -f --dry-run
+      run: |
+        # Authenticate using GITHUB_TOKEN
+        echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+
+        # Create a pull request
+        gh pr create --base prod --head dev --lable housing_pr -f --dry-run
+
+    # Step to create a pull request from dev to prod
+#    - name: Create Pull Request from dev to prod
+#      id: housing_pr  # Add an ID to this step to reference its output
+#      uses: peter-evans/create-pull-request@v7
+#      with:
+#        token: ${{ secrets.GITHUB_TOKEN }}
+#        base: prod  # Target branch to merge into
+#        branch: dev  # Source branch to merge from
+#        title: 'Automated Update from dev to prod for Housing Script'
+#        body: 'This is an automated pull request to merge changes from dev to prod.'
+#
+#    # TODO use github cli for this
+#    # TODO check for current git repos
+#    # deleted any that might not be needed
+#    # then create mr and merge
+#
+#    - name: Enable Pull Request Automerge for dev to prod
+#      run: gh pr merge --repo celestegambardella/celestegambardella.io --merge --auto "1"
+#      env:
+#        GH_TOKEN: ${{ secrets.PAT }}
+#      env:
+#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
