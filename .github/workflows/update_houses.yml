@@ -76,7 +76,8 @@ jobs:
     - name: List PRs
       run: |
         cd dist
-        echo gh pr ls
+        prs=$(gh pr ls)
+        echo "List of PRs: $prs"
       env:
         GH_TOKEN: ${{ secrets.PAT_TOKEN }}
 
