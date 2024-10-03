@@ -10,7 +10,7 @@ import os
 
 # Define base directories
 BASE_DIR = os.getcwd()
-OUTPUT_DIR = "output/"
+OUTPUT_DIR = "src/output/"
 JSON_FILE_PATH = OUTPUT_DIR + "houses.json"
 MD_FILE_PATH = OUTPUT_DIR + "hausing-scraper.md"
 
