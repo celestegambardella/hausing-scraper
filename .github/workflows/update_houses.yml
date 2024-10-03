@@ -12,6 +12,10 @@ jobs:
   update:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+      pull-requests: write
+
     steps:
     - name: Checkout scraper repo
       uses: actions/checkout@v4
@@ -61,10 +65,6 @@ jobs:
         cd dist
         git fetch origin prod:prod  # Ensure the prod branch is fetched locally
 
-    - name: Authenticate with GitHub CLI
-      run: |
-        echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
-
     - name: Create Pull Request from dev to prod
       run: |
         cd dist
@@ -73,9 +73,7 @@ jobs:
 
     - name: Auto-merge PR with label 'housing mr'
       run: |
-        # Authenticate using GITHUB_TOKEN
-        echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
-
+        cd dist
         # Find the PR with the label "housing mr"
         pr_number=$(gh pr list --base prod --label "housing mr" --json number --jq '.[0].number')
 
