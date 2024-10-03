@@ -73,6 +73,13 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.PAT_TOKEN }}
 
+    - name: List PRs
+      run: |
+        cd dist
+        echo gh pr ls
+      env:
+        GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+
     - name: Auto-merge PR with label 'housing pr'
       run: |
         cd dist
@@ -84,7 +91,7 @@ jobs:
           gh pr merge $pr_number --squash --admin
           echo "PR #$pr_number merged successfully."
         else
-          echo "No PR found with label 'housing mr'."
+          echo "No PR found with label 'housing pr'."
         fi
       env:
         GH_TOKEN: ${{ secrets.PAT_TOKEN }}
