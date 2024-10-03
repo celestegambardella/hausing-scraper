@@ -127,10 +127,12 @@ def load_existing_listings(file_name='listings.json'):
     else:
         return {}
 
-def old_listings(file, data):
+
+def old_listings(file, data, url):
     file.write(f"\n### Previously Found Listings\n")
     for address, details in data.items():
         file.write(f"- {address}: €{details['price']}/month - [View Property]({details['url']})\n")
+        file.write(f"\t- [Google Maps]({url}{address.replace(' ', '-')})\n")
 
 
 def update_markdown(new_listings, existing_data, md_file_path=MD_FILE_PATH):
@@ -141,7 +143,8 @@ def update_markdown(new_listings, existing_data, md_file_path=MD_FILE_PATH):
     # Define the timezone for Amsterdam
     amsterdam_tz = zoneinfo.ZoneInfo("Europe/Amsterdam")
 
-    url = "https://www.hausing.com/properties-for-rent-amsterdam?sort-asc=price"
+    listing_url = "https://www.hausing.com/properties-for-rent-amsterdam?sort-asc=price"
+    google_maps = "http://maps.google.com/?q="
     with open(md_file_path, 'w') as md_file:
         # Get the current time in Amsterdam timezone
         current_time = datetime.now(amsterdam_tz).strftime('%Y-%m-%d %H:%M:%S')
@@ -163,15 +166,15 @@ def update_markdown(new_listings, existing_data, md_file_path=MD_FILE_PATH):
             if new_listings:
                 md_file.write(f"\n### [New] Listings\n")
                 for address, details in new_listings.items():
-                    md_file.write(f"- **{address}**: €{details['price']}/month - [View Property]({details['url']})\n")
+                    md_file.write(f"- **{address}**: €{details['price']}/month - [View Property]({details['listing_url']})\n")
+                    md_file.write(f"\t- [Google Maps]({google_maps}{address.replace(' ', '-')})\n")
 
                 if existing_data:
-                    old_listings(md_file, existing_data)
+                    old_listings(md_file, existing_data, google_maps)
             else:
                 md_file.write(f"\n## No New Listings Found\n")
-                old_listings(md_file, existing_data)
 
-        md_file.write(f"---\n###### [`www.hausing.com`]({url})\n")
+        md_file.write(f"---\n###### [`www.hausing.com`]({listing_url})\n")
         md_file.write(f"\n`{short_time}`")
         md_file.write(f"\n###### [Source Code](https://github.com/celestegambardella/hausing-scraper)\n")
 
