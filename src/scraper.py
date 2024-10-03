@@ -12,7 +12,7 @@ import os
 
 # Define base directories
 BASE_DIR = os.getcwd()
-TESTING = False
+TESTING = False     # TODO: make this an env var
 OUTPUT_DIR = "output/" if TESTING else "src/output"
 JSON_FILE_PATH = OUTPUT_DIR + "listings.json"
 MD_FILE_PATH = OUTPUT_DIR + "hausing-scraper.md"

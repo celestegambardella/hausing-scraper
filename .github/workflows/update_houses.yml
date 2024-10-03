@@ -1,4 +1,4 @@
-name: Update Hausing Scraper
+name: Update Housing Scraper
 
 on:
   schedule:
@@ -26,79 +26,75 @@ jobs:
       with:
         python-version: '3.12.6'
 
-    - name: List directories
+    - name: Install dependencies
       run: |
-        ls -R
+        python -m pip install --upgrade pip
+        pip install requests beautifulsoup4
 
-#    - name: Install dependencies
-#      run: |
-#        python -m pip install --upgrade pip
-#        pip install requests beautifulsoup4
-#
-#    - name: Run scraper script
-#      run: |
-#        python src/scraper.py
-#
-#    - name: Checkout GitHub Pages repo
-#      uses: actions/checkout@v4
-#      with:
-#        token: ${{ secrets.PAT_TOKEN }}
-#        repository: celestegambardella/celestegambardella.github.io
-#        ref: prod  # Checkout the prod branch
-#        path: dist  # This checks out the GitHub Pages repo to the "dist" directory
-#
-#    - name: List output directory
-#      run: |
-#        ls -la src/output/
-#
-#    - name: Copy markdown to GitHub Pages repo
-#      run: |
-#        cp src/output/hausing-scraper.md dist/src/content/work/hausing-scrapper.md
-#
-#    - name: Commit changes to a new branch
-#      run: |
-#        cd dist  # Change to the dist directory
-#        git config --global user.email "celestegambardella.se@gmail.com"
-#        git config --global user.name "celestegambardella"
-#
-#        # Create a new branch based on the prod branch
-#        branch_name="update-hausing-scraper-$(date +%Y%m%d%H%M%S)"
-#        echo "BRANCH_NAME=${branch_name}" >> $GITHUB_ENV  # Store the branch name in the GitHub environment
-#
-#        git checkout -b $branch_name
-#
-#        # Add and commit changes
-#        current_time=$(TZ="Europe/Amsterdam" date +"%b %-d %Y %H:%M")
-#        echo "CURRENT_TIME=${current_time}" >> $GITHUB_ENV  # Store the branch name in the GitHub environment
-#
-#        git add src/content/work/hausing-scrapper.md
-#        git commit -m "Update Hausing Scraper results at $current_time"
-#
-#        # Push the new branch to GitHub
-#        git push https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/celestegambardella/celestegambardella.github.io.git $branch_name
-#
-#    - name: Create Pull Request from new branch to prod
-#      run: |
-#        cd dist
-#        gh pr create --base prod --head ${{ env.BRANCH_NAME }} --title "Automated PR: Update Hausing Scraper (${{ env.CURRENT_TIME }})" --body "Automated update of Hausing Scraper results" --label "housing pr"
-#      env:
-#        GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-#
-#    - name: Wait for a moment to ensure the PR has been created
-#      run: |
-#        sleep 3
-#
-#    - name: Find and merge the PR
-#      run: |
-#        cd dist
-#        pr_number=$(gh pr list --base prod --label "housing pr" --json number --jq '.[0].number')
-#
-#        # Check if the PR exists, then merge it
-#        if [ -n "$pr_number" ]; then
-#            gh pr merge $pr_number -d --squash --admin
-#            echo "PR #$pr_number merged successfully."
-#        else
-#            echo "No PR found with label 'housing pr'."
-#        fi
-#      env:
-#        GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+    - name: Run scraper script
+      run: |
+        python src/scraper.py
+
+    - name: Checkout GitHub Pages repo
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.PAT_TOKEN }}
+        repository: celestegambardella/celestegambardella.github.io
+        ref: prod  # Checkout the prod branch
+        path: dist  # This checks out the GitHub Pages repo to the "dist" directory
+
+    - name: List output directory
+      run: |
+        ls -la src/output/
+
+    - name: Copy markdown to GitHub Pages repo
+      run: |
+        cp output/hausing-scraper.md dist/src/content/work/hausing-scrapper.md
+
+    - name: Commit changes to a new branch
+      run: |
+        cd dist  # Change to the dist directory
+        git config --global user.email "celestegambardella.se@gmail.com"
+        git config --global user.name "celestegambardella"
+
+        # Create a new branch based on the prod branch
+        branch_name="update-hausing-scraper-$(date +%Y%m%d%H%M%S)"
+        echo "BRANCH_NAME=${branch_name}" >> $GITHUB_ENV  # Store the branch name in the GitHub environment
+
+        git checkout -b $branch_name
+
+        # Add and commit changes
+        current_time=$(TZ="Europe/Amsterdam" date +"%b %-d %Y %H:%M")
+        echo "CURRENT_TIME=${current_time}" >> $GITHUB_ENV  # Store the branch name in the GitHub environment
+
+        git add src/content/work/hausing-scrapper.md
+        git commit -m "Update Hausing Scraper results at $current_time"
+
+        # Push the new branch to GitHub
+        git push https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/celestegambardella/celestegambardella.github.io.git $branch_name
+
+    - name: Create Pull Request from new branch to prod
+      run: |
+        cd dist
+        gh pr create --base prod --head ${{ env.BRANCH_NAME }} --title "Automated PR: Update Hausing Scraper (${{ env.CURRENT_TIME }})" --body "Automated update of Hausing Scraper results" --label "housing pr"
+      env:
+        GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+
+    - name: Wait for a moment to ensure the PR has been created
+      run: |
+        sleep 3
+
+    - name: Find and merge the PR
+      run: |
+        cd dist
+        pr_number=$(gh pr list --base prod --label "housing pr" --json number --jq '.[0].number')
+
+        # Check if the PR exists, then merge it
+        if [ -n "$pr_number" ]; then
+            gh pr merge $pr_number -d --squash --admin
+            echo "PR #$pr_number merged successfully."
+        else
+            echo "No PR found with label 'housing pr'."
+        fi
+      env:
+        GH_TOKEN: ${{ secrets.PAT_TOKEN }}
