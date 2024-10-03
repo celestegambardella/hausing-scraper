@@ -73,11 +73,11 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.PAT_TOKEN }}
 
-    - name: Auto-merge PR with label 'housing mr'
+    - name: Auto-merge PR with label 'housing pr'
       run: |
         cd dist
-        # Find the PR with the label "housing mr"
-        pr_number=$(gh pr list --base prod --label "housing mr" --json number --jq '.[0].number')
+        # Find the PR with the label "housing pr"
+        pr_number=$(gh pr list --base prod --label "housing pr" --json number --jq '.[0].number')
 
         # Check if the PR exists, then merge it
         if [ -n "$pr_number" ]; then
