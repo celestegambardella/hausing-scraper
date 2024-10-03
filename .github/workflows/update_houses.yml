@@ -89,15 +89,10 @@ jobs:
 
         # Check if the PR exists, then merge it
         if [ -n "$pr_number" ]; then
-            gh pr merge $pr_number --squash --admin
+            gh pr merge $pr_number -d --squash --admin
             echo "PR #$pr_number merged successfully."
         else
             echo "No PR found with label 'housing pr'."
         fi
       env:
         GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-
-    - name: Delete the new branch after merging
-      run: |
-        cd dist
-        git branch -d ${{ env.BRANCH_NAME }}
