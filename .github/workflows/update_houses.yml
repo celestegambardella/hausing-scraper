@@ -58,6 +58,8 @@ jobs:
         
         # Create a new branch based on the prod branch
         branch_name="update-hausing-scraper-$(date +%Y%m%d%H%M%S)"
+        echo "BRANCH_NAME=${branch_name}" >> $GITHUB_ENV  # Store the branch name in the GitHub environment
+        
         git checkout -b $branch_name
         
         # Add and commit changes
@@ -72,7 +74,7 @@ jobs:
       run: |
         cd dist
         current_time=$(date +"%Y-%m-%d %H:%M:%S")
-        gh pr create --base prod --head $branch_name --title "Automated PR: Update Hausing Scraper ($current_time)" --body "Automated update of Hausing Scraper results" --label "housing pr"
+        gh pr create --base prod --head ${{ env.BRANCH_NAME }} --title "Automated PR: Update Hausing Scraper ($current_time)" --body "Automated update of Hausing Scraper results" --label "housing pr"
 
     - name: Wait for a moment to ensure the PR has been created
       run: |
@@ -94,4 +96,4 @@ jobs:
     - name: Delete the new branch after merging
       run: |
         cd dist
-        git branch -d $branch_name
+        git branch -d ${{ env.BRANCH_NAME }}
