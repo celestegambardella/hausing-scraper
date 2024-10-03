@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from idlelib import testing
 from pprint import pprint
 
 import requests
@@ -11,7 +12,8 @@ import os
 
 # Define base directories
 BASE_DIR = os.getcwd()
-OUTPUT_DIR = "output/"
+TESTING = False     # TODO: make this an env var
+OUTPUT_DIR = "output/" if TESTING else "src/output"
 JSON_FILE_PATH = OUTPUT_DIR + "listings.json"
 MD_FILE_PATH = OUTPUT_DIR + "hausing-scraper.md"
 
