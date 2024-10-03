@@ -1,9 +1,9 @@
 name: Update Hausing Scraper
 
 on:
-#  schedule:
-#    - cron: '0 * * * *'  # Run hourly
-#  workflow_dispatch:  # Allow manual triggering
+  schedule:
+    - cron: '0 * * * *'  # Run hourly
+  workflow_dispatch:  # Allow manual triggering
   push:
     branches:
       - main  # Trigger on pushes to the main branch
@@ -73,16 +73,18 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.PAT_TOKEN }}
 
-    - name: List PRs
+    - name: List or PRs
       run: |
         cd dist
-        prs=$(gh pr ls)
+        prs=$(gh pr ls --search "status:open label:'housing pr'")
         echo "List of PRs: $prs"
       env:
         GH_TOKEN: ${{ secrets.PAT_TOKEN }}
 
     - name: Auto-merge PR with label 'housing pr'
       run: |
+        # Wait a moment to ensure the PR has been created
+        sleep 5
         cd dist
         # Find the PR with the label "housing pr"
         pr_number=$(gh pr list --base prod --label "housing pr" --json number --jq '.[0].number')
