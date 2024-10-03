@@ -64,8 +64,8 @@ def get_house_status(house_availability):
     return statues
 
 
-def get_houses(url, max_price):
-    houses = {}
+def get_listings(url, max_price):
+    listings = {}
     try:
         # Send a GET request to the URL
         response = requests.get(url)
@@ -100,8 +100,8 @@ def get_houses(url, max_price):
         if len(addresses) == len(price_values):
             for idx, (address, price, status, url) in enumerate(zip(addresses, price_values, statues, urls), start=1):
                 if int(price) < max_price and status == "Available":
-                    # Construct the dict with houses available
-                    houses[address] = {
+                    # Construct the dict with listings available
+                    listings[address] = {
                         "price": int(price),
                         "url": url,
                         "status": status,
@@ -112,10 +112,10 @@ def get_houses(url, max_price):
     except requests.RequestException as e:
         print(f"An error occurred: {e}")
 
-    return houses
+    return listings
 
 
-def load_existing_houses(file_name='houses.json'):
+def load_existing_listings(file_name='listings.json'):
     if os.path.exists(file_name):
         with open(file_name, 'r') as fp:
             try:
@@ -126,8 +126,13 @@ def load_existing_houses(file_name='houses.json'):
     else:
         return {}
 
+def old_listings(file, data):
+    file.write(f"\n### Previously Found Listings\n")
+    for address, details in data.items():
+        file.write(f"- {address}: €{details['price']}/month - [View Property]({details['url']})\n")
 
-def update_markdown(new_houses, existing_data, md_file_path=MD_FILE_PATH):
+
+def update_markdown(new_listings, existing_data, md_file_path=MD_FILE_PATH):
     # Ensure the output directory exists
     output_dir = os.path.dirname(md_file_path)
     os.makedirs(output_dir, exist_ok=True)
@@ -150,26 +155,27 @@ def update_markdown(new_houses, existing_data, md_file_path=MD_FILE_PATH):
         md_file.write(f"---\n")
 
         short_time = datetime.now(amsterdam_tz).strftime('%b %d %Y %H:%M')
-        # Always print the existing houses
+        # Always print the existing listings
         if existing_data is None:
-            md_file.write(f"\n## No New or Previously Found Apartments\n")
+            md_file.write(f"\n## No New or Previously Found Listings\n")
         else:
-            if new_houses:
-                md_file.write(f"\n### [New] Apartments\n")
-                for address, details in new_houses.items():
+            if new_listings:
+                md_file.write(f"\n### [New] Listings\n")
+                for address, details in new_listings.items():
                     md_file.write(f"- **{address}**: €{details['price']}/month - [View Property]({details['url']})\n")
+
+                if existing_data:
+                    old_listings(md_file, existing_data)
             else:
                 md_file.write(f"\n## No New Listings Found\n")
-                md_file.write(f"\n### Previously Found Apartments\n")
-                for address, details in existing_data.items():
-                    md_file.write(f"- {address}: €{details['price']}/month - [View Property]({details['url']})\n")
+                old_listings(md_file, existing_data)
 
         md_file.write(f"---\n###### [`www.hausing.com`]({url})\n")
         md_file.write(f"\n`{short_time}`")
         md_file.write(f"\n###### [Source Code](https://github.com/celestegambardella/hausing-scraper)\n")
 
 
-def update_houses(new_data, json_file_path=JSON_FILE_PATH, output_file_path=MD_FILE_PATH):
+def update_listings(new_data, json_file_path=JSON_FILE_PATH, output_file_path=MD_FILE_PATH):
     # Ensure the output directory exists
     output_dir = os.path.dirname(output_file_path)
     os.makedirs(output_dir, exist_ok=True)
@@ -180,23 +186,24 @@ def update_houses(new_data, json_file_path=JSON_FILE_PATH, output_file_path=MD_F
     except (FileNotFoundError, json.JSONDecodeError):
         existing_data = {}
 
-    # Find new houses by checking if the address exists in the current data
-    new_houses = {addr: details for addr, details in new_data.items() if addr not in existing_data}
+    # Find new listings by checking if the address exists in the current data
+    new_listings = {addr: details for addr, details in new_data.items() if addr not in existing_data}
 
-    print(f"Found {len(new_houses)} new houses:")
-    for address, details in new_houses.items():
-        print(f"New Appartment: {address}, Price: {details['price']}, URL: {details['url']}")
+    print(f"Found {len(new_listings)} new listings:")
+    for address, details in new_listings.items():
+        print(f"New Listing: {address}, Price: {details['price']}, URL: {details['url']}")
 
-    # Update existing data with new houses
-    existing_data.update(new_houses)
-    update_markdown(new_houses, existing_data)
+    # Call the function to update the markdown file
+    update_markdown(new_listings, existing_data)
 
     print("Markdown and JSON files updated with new listings.")
 
-    # Write the updated data back to the JSON file
-    # Update the JSON file regardless of new data
+    # Update the existing data with new listings
+    existing_data.update(new_listings)
+
+    # Overwrite the JSON file with updated data
     with open(json_file_path, 'w') as fp:
-        json.dump(existing_data, fp, indent=4)
+        json.dump(new_data, fp, indent=4)
 
 
 def main():
@@ -207,12 +214,13 @@ def main():
 
     url = "https://www.hausing.com/properties-for-rent-amsterdam?sort-asc=price"
     max_price = 2650
-    new_houses = get_houses(url, max_price)
+    new_listings = get_listings(url, max_price)
 
-    if new_houses:
-        update_houses(new_houses)
+    if new_listings:
+        update_listings(new_listings)
     else:
-        print("No houses found within the price range.")
+        update_listings(new_listings)
+        print("No listings found within the price range.")
 
 
 if __name__ == "__main__":
