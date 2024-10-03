@@ -32,8 +32,7 @@ jobs:
 
     - name: List directories
       run: |
-        test=${ls -l --color=auto}
-        echo "$test"
+        ls -l
 
 #    - name: Run scraper script
 #      run: |
