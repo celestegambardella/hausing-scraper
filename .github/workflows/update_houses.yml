@@ -1,9 +1,9 @@
 name: Update Hausing Scraper
 
 on:
-  schedule:
-    - cron: '0 * * * *'  # Run hourly
-  workflow_dispatch:  # Allow manual triggering
+  # schedule:
+    # - cron: '0 * * * *'  # Run hourly
+  # workflow_dispatch:  # Allow manual triggering
   push:
     branches:
       - main  # Trigger on pushes to the main branch
@@ -39,8 +39,8 @@ jobs:
       with:
         token: ${{ secrets.PAT_TOKEN }}
         repository: celestegambardella/celestegambardella.github.io
-        ref: dev  # Checkout the dev branch
-        path: dist  # This checks out the GitHub Pages repo to the "work" directory
+        ref: prod  # Checkout the prod branch
+        path: dist  # This checks out the GitHub Pages repo to the "dist" directory
 
     - name: List output directory
       run: |
@@ -50,51 +50,48 @@ jobs:
       run: |
         cp src/output/hausing-scraper.md dist/src/content/work/hausing-scrapper.md
 
-    - name: Commit changes to dev branch
+    - name: Commit changes to a new branch
       run: |
         cd dist  # Change to the dist directory
         git config --global user.email "celestegambardella.se@gmail.com"
         git config --global user.name "celestegambardella"
+        
+        # Create a new branch based on the prod branch
+        branch_name="update-hausing-scraper-$(date +%Y%m%d%H%M%S)"
+        git checkout -b $branch_name
+        
+        # Add and commit changes
         current_time=$(date +"%Y-%m-%d %H:%M:%S")
         git add src/content/work/hausing-scrapper.md
         git commit -m "Update Hausing Scraper results at $current_time"
-        git push https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/celestegambardella/celestegambardella.github.io.git dev
+        
+        # Push the new branch to GitHub
+        git push https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/celestegambardella/celestegambardella.github.io.git $branch_name
 
-    - name: Fetch prod branch
-      run: |
-        cd dist
-        git fetch origin prod:prod  # Ensure the prod branch is fetched locally
-
-    - name: Create Pull Request from dev to prod
+    - name: Create Pull Request from new branch to prod
       run: |
         cd dist
         current_time=$(date +"%Y-%m-%d %H:%M:%S")
-        gh pr create --base prod --head dev --title "Automated PR: Update Hausing Scraper ($current_time)" --body "Automated update of Hausing Scraper results" --label "housing pr"
-      env:
-        GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+        gh pr create --base prod --head $branch_name --title "Automated PR: Update Hausing Scraper ($current_time)" --body "Automated update of Hausing Scraper results" --label "housing pr"
 
-    - name: List or PRs
+    - name: Wait for a moment to ensure the PR has been created
+      run: |
+        sleep 5
+
+    - name: Find and merge the PR
       run: |
         cd dist
-        prs=$(gh pr ls --search "status:open label:'housing pr'")
-        echo "List of PRs: $prs"
-      env:
-        GH_TOKEN: ${{ secrets.PAT_TOKEN }}
-
-    - name: Auto-merge PR with label 'housing pr'
-      run: |
-        # Wait a moment to ensure the PR has been created
-        # sleep 2
-        cd dist
-        # Find the PR with the label "housing pr"
         pr_number=$(gh pr list --base prod --label "housing pr" --json number --jq '.[0].number')
 
         # Check if the PR exists, then merge it
         if [ -n "$pr_number" ]; then
-          gh pr merge $pr_number --squash --admin
-          echo "PR #$pr_number merged successfully."
+            gh pr merge $pr_number --squash --admin
+            echo "PR #$pr_number merged successfully."
         else
-          echo "No PR found with label 'housing pr'."
+            echo "No PR found with label 'housing pr'."
         fi
-      env:
-        GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+
+    - name: Delete the new branch after merging
+      run: |
+        cd dist
+        git branch -d $branch_name
