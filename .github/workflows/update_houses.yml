@@ -70,7 +70,7 @@ jobs:
         echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
 
         # Create a pull request
-        gh pr create --base prod --head dev --lable housing_pr -f --dry-run
+        gh pr create --base prod --head dev --label housing_pr -f --dry-run
 
     # Step to create a pull request from dev to prod
 #    - name: Create Pull Request from dev to prod
