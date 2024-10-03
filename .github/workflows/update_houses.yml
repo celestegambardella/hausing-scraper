@@ -69,8 +69,7 @@ jobs:
       run: |
         cd dist
         current_time=$(date +"%Y-%m-%d %H:%M:%S")
-        gh pr create --base prod --head dev --title "Automated PR: Update Hausing Scraper ($current_time)" --body 
-        "Automated update of Hausing Scraper results" --label "housing pr" --dry-run
+        gh pr create --base prod --head dev --title "Automated PR: Update Hausing Scraper ($current_time)" --body "Automated update of Hausing Scraper results" --label "housing pr" --dry-run
 #
 #    # TODO use github cli for this
 #    # TODO check for current git repos
