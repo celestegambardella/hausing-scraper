@@ -27,7 +27,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install requests beautifulsoup4
 
-    - name: List all directorues
+    - name: List all directories
       run: |
         ls -R
 
@@ -45,7 +45,7 @@ jobs:
 
     - name: List output directory
       run: |
-        ls -la src/output/
+        ls -la /home/runner/work/hausing-scraper/hausing-scraper
 
     - name: Copy markdown to GitHub Pages repo
       run: |
