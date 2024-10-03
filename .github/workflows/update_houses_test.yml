@@ -1,4 +1,4 @@
-name: Update Housing Scraper
+name: TEST Update Housing Scraper
 
 on:
   push:
@@ -45,8 +45,11 @@ jobs:
 
     - name: List output directory
       run: |
-        ls -la /home/runner/work/hausing-scraper/hausing-scraper
+        dir="/home/runner/work/hausing-scraper/hausing-scraper"
+        ls -la ${dir}
+        echo "WORKING_DIR=${dir}" >> $GITHUB_ENV  # Store the branch name in the GitHub environment
 
     - name: Copy markdown to GitHub Pages repo
       run: |
-        cp src/output/hausing-scraper.md dist/src/content/work/hausing-scrapper.md
+        cp ${{ env.WORKING_DIR }}/src/output/hausing-scraper.md 
+        dist/src/content/work/hausing-scrapper.md
