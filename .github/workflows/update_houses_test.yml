@@ -33,7 +33,7 @@ jobs:
 
     - name: Run scraper script
       run: |
-        python src/scraper.py
+        python scraper.py
 
     - name: Checkout GitHub Pages repo
       uses: actions/checkout@v4
@@ -45,10 +45,10 @@ jobs:
 
     - name: List output directory
       run: |
-        dir="/home/runner/work/hausing-scraper/hausing-scraper"
-        ls -la ${dir}
-        echo "WORKING_DIR=${dir}" >> $GITHUB_ENV  # Store the branch name in the GitHub environment
+        dir=pwd
+        ls -la ${dir}/src/output
 
     - name: Copy markdown to GitHub Pages repo
       run: |
-        cp ${{ env.WORKING_DIR }}/src/output/hausing-scraper.md dist/src/content/work/hausing-scrapper.md
+        cp $GITHUB_WORKSPACE/output/hausing-scraper.md dist/src/content/work/hausing-scrapper.md
+        cat $GITHUB_WORKSPACE/output/hausing-scraper.md

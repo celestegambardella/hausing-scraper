@@ -12,10 +12,9 @@ import os
 
 # Define base directories
 BASE_DIR = os.getcwd()
-TESTING = False     # TODO: make this an env var
-OUTPUT_DIR = "output/" if TESTING else "src/output"
-JSON_FILE_PATH = OUTPUT_DIR + "listings.json"
-MD_FILE_PATH = OUTPUT_DIR + "hausing-scraper.md"
+OUTPUT_DIR = os.path.join(BASE_DIR, "output/")
+JSON_FILE_PATH = os.path.join(OUTPUT_DIR, "listings.json")
+MD_FILE_PATH = os.path.join(OUTPUT_DIR, "hausing-scraper.md")
 
 def get_addresses(address_divs):
     addresses = []
