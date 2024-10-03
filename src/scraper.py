@@ -131,10 +131,11 @@ def update_markdown(new_houses, existing_data, md_file_path=MD_FILE_PATH):
     output_dir = os.path.dirname(md_file_path)
     os.makedirs(output_dir, exist_ok=True)
 
+    url = "https://www.hausing.com/properties-for-rent-amsterdam?sort-asc=price"
     with open(md_file_path, 'w') as md_file:
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         md_file.write(f"---\n")
-        md_file.write(f"title: Hausing Scraper\n")
+        md_file.write(f"title: Housing Scraper\n")
         md_file.write(f"publishDate: {now}\n")
         md_file.write(f"img: /assets/stock-1.jpg\n")
         md_file.write(f"img_alt: A bright pink sheet of paper used to wrap flowers curves in front of rich blue background\n")
@@ -144,14 +145,22 @@ def update_markdown(new_houses, existing_data, md_file_path=MD_FILE_PATH):
         md_file.write(f"---\n")
 
         short_time = datetime.now().strftime('%b %d %Y %H:%M')
-        if new_houses:
-            md_file.write(f"\n### [New] Apartments\n")
-            for address, details in new_houses.items():
-                md_file.write(f"- **{address}**: €{details['price']}/month - [View Property]({details['url']})\n")
+        # Always print the existing houses
+        if existing_data is None:
+            md_file.write(f"\n## No New or Previously Found Apartments\n")
         else:
-            md_file.write(f"\n## No New Listings Found\n")
+            if new_houses:
+                md_file.write(f"\n### [New] Apartments\n")
+                for address, details in new_houses.items():
+                    md_file.write(f"- **{address}**: €{details['price']}/month - [View Property]({details['url']})\n")
+            else:
+                md_file.write(f"\n## No New Listings Found\n")
+                md_file.write(f"\n### Previously Found Apartments\n")
+                for address, details in existing_data.items():
+                    md_file.write(f"- {address}: €{details['price']}/month - [View Property]({details['url']})\n")
 
-        md_file.write(f"---\n`{short_time}`")
+        md_file.write(f"---\n###### [`www.hausing.com`]({url})\n")
+        md_file.write(f"\n`{short_time}`")
         md_file.write(f"\n###### [Source Code](https://github.com/celestegambardella/hausing-scraper)\n")
 
 
@@ -181,7 +190,6 @@ def update_houses(new_data, json_file_path=JSON_FILE_PATH, output_file_path=MD_F
 
     # Write the updated data back to the JSON file
     # Update the JSON file regardless of new data
-    existing_data.update(new_houses)
     with open(json_file_path, 'w') as fp:
         json.dump(existing_data, fp, indent=4)
 
