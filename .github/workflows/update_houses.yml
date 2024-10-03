@@ -68,7 +68,9 @@ jobs:
     - name: Create Pull Request from dev to prod
       run: |
         cd dist
-        gh pr create --base prod --head dev --title "Automated PR: Update Hausing Scraper" --body "Automated update of Hausing Scraper results" --label housing_pr
+        current_time=$(date +"%Y-%m-%d %H:%M:%S")
+        gh pr create --base prod --head dev --title "Automated PR: Update Hausing Scraper ($current_time)" --body 
+        "Automated update of Hausing Scraper results" --label "housing pr" --dry-run
 #
 #    # TODO use github cli for this
 #    # TODO check for current git repos
