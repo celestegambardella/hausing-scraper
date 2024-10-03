@@ -51,5 +51,4 @@ jobs:
 
     - name: Copy markdown to GitHub Pages repo
       run: |
-        cp ${{ env.WORKING_DIR }}/src/output/hausing-scraper.md 
-        dist/src/content/work/hausing-scrapper.md
+        cp ${{ env.WORKING_DIR }}/src/output/hausing-scraper.md dist/src/content/work/hausing-scrapper.md
