@@ -91,7 +91,7 @@ jobs:
 
         # Check if the PR exists, then merge it
         if [ -n "$pr_number" ]; then
-          gh pr merge $pr_number --squash --admin
+          gh pr merge $pr_number --squash --admin --auto
           echo "PR #$pr_number merged successfully."
         else
           echo "No PR found with label 'housing pr'."
