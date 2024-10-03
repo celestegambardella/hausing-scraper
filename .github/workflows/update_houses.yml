@@ -1,9 +1,9 @@
 name: Update Hausing Scraper
 
 on:
-  # schedule:
-    # - cron: '0 * * * *'  # Run hourly
-  # workflow_dispatch:  # Allow manual triggering
+   schedule:
+     - cron: '0 * * * *'  # Run hourly
+   workflow_dispatch:  # Allow manual triggering
   push:
     branches:
       - main  # Trigger on pushes to the main branch
@@ -63,7 +63,9 @@ jobs:
         git checkout -b $branch_name
 
         # Add and commit changes
-        current_time=$(date +"%Y-%m-%d %H:%M:%S")
+        current_time=$(TZ="Europe/Amsterdam" date +"%b %-d %Y %H:%M")
+        echo "CURRENT_TIME=${current_time}" >> $GITHUB_ENV  # Store the branch name in the GitHub environment
+
         git add src/content/work/hausing-scrapper.md
         git commit -m "Update Hausing Scraper results at $current_time"
 
@@ -73,14 +75,13 @@ jobs:
     - name: Create Pull Request from new branch to prod
       run: |
         cd dist
-        current_time=$(date +"%Y-%m-%d %H:%M:%S")
-        gh pr create --base prod --head ${{ env.BRANCH_NAME }} --title "Automated PR: Update Hausing Scraper ($current_time)" --body "Automated update of Hausing Scraper results" --label "housing pr"
+        gh pr create --base prod --head ${{ env.BRANCH_NAME }} --title "Automated PR: Update Hausing Scraper (${{ env.CURRENT_TIME }})" --body "Automated update of Hausing Scraper results" --label "housing pr"
       env:
         GH_TOKEN: ${{ secrets.PAT_TOKEN }}
 
     - name: Wait for a moment to ensure the PR has been created
       run: |
-        sleep 5
+        sleep 3
 
     - name: Find and merge the PR
       run: |
