@@ -75,6 +75,8 @@ jobs:
         cd dist
         current_time=$(date +"%Y-%m-%d %H:%M:%S")
         gh pr create --base prod --head ${{ env.BRANCH_NAME }} --title "Automated PR: Update Hausing Scraper ($current_time)" --body "Automated update of Hausing Scraper results" --label "housing pr"
+      env:
+        GH_TOKEN: ${{ secrets.PAT_TOKEN }}
 
     - name: Wait for a moment to ensure the PR has been created
       run: |
@@ -92,6 +94,8 @@ jobs:
         else
             echo "No PR found with label 'housing pr'."
         fi
+      env:
+        GH_TOKEN: ${{ secrets.PAT_TOKEN }}
 
     - name: Delete the new branch after merging
       run: |
