@@ -45,8 +45,7 @@ jobs:
 
     - name: List output directory
       run: |
-        dir=pwd
-        ls -la ${dir}/src/output
+        ls -la $GITHUB_WORKSPACE/output
 
     - name: Copy markdown to GitHub Pages repo
       run: |
