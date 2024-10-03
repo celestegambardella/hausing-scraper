@@ -136,7 +136,7 @@ def update_markdown(new_houses, existing_data, md_file_path=MD_FILE_PATH):
         md_file.write(f"---\n")
         md_file.write(f"title: Hausing Scraper\n")
         md_file.write(f"publishDate: {now}\n")
-        md_file.write(f"img: /assets/stock-2.jpg\n")
+        md_file.write(f"img: /assets/stock-1.jpg\n")
         md_file.write(f"img_alt: A bright pink sheet of paper used to wrap flowers curves in front of rich blue background\n")
         md_file.write(f"description: |\n")
         md_file.write(f"  Python script that runs hourly and scrapes www.hausing.com for any new properties.\n")
