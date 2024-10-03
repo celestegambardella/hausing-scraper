@@ -5,6 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 from datetime import datetime
+import zoneinfo
 import json
 import os
 
@@ -131,12 +132,16 @@ def update_markdown(new_houses, existing_data, md_file_path=MD_FILE_PATH):
     output_dir = os.path.dirname(md_file_path)
     os.makedirs(output_dir, exist_ok=True)
 
+    # Define the timezone for Amsterdam
+    amsterdam_tz = zoneinfo.ZoneInfo("Europe/Amsterdam")
+
     url = "https://www.hausing.com/properties-for-rent-amsterdam?sort-asc=price"
     with open(md_file_path, 'w') as md_file:
-        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        # Get the current time in Amsterdam timezone
+        current_time = datetime.now(amsterdam_tz).strftime('%Y-%m-%d %H:%M:%S')
         md_file.write(f"---\n")
         md_file.write(f"title: Housing Scraper\n")
-        md_file.write(f"publishDate: {now}\n")
+        md_file.write(f"publishDate: {current_time}\n")
         md_file.write(f"img: /assets/stock-1.jpg\n")
         md_file.write(f"img_alt: A bright pink sheet of paper used to wrap flowers curves in front of rich blue background\n")
         md_file.write(f"description: |\n")
@@ -144,7 +149,7 @@ def update_markdown(new_houses, existing_data, md_file_path=MD_FILE_PATH):
         md_file.write(f"tags:\n  - Dev\n  - Frontend\n  - Scripting\n")
         md_file.write(f"---\n")
 
-        short_time = datetime.now().strftime('%b %d %Y %H:%M')
+        short_time = datetime.now(amsterdam_tz).strftime('%b %d %Y %H:%M')
         # Always print the existing houses
         if existing_data is None:
             md_file.write(f"\n## No New or Previously Found Apartments\n")
