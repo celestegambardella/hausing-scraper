@@ -48,7 +48,7 @@ jobs:
 
     - name: Copy markdown to GitHub Pages repo
       run: |
-        cp output/hausing-scraper.md dist/src/content/work/hausing-scrapper.md
+        cp src/output/hausing-scraper.md dist/src/content/work/hausing-scrapper.md
 
     - name: Commit changes to a new branch
       run: |
