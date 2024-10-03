@@ -69,16 +69,20 @@ jobs:
       run: |
         cd dist
         current_time=$(date +"%Y-%m-%d %H:%M:%S")
-        gh pr create --base prod --head dev --title "Automated PR: Update Hausing Scraper ($current_time)" --body "Automated update of Hausing Scraper results" --label "housing pr" --dry-run
-#
-#    # TODO use github cli for this
-#    # TODO check for current git repos
-#    # deleted any that might not be needed
-#    # then create mr and merge
-#
-#    - name: Enable Pull Request Automerge for dev to prod
-#      run: gh pr merge --repo celestegambardella/celestegambardella.io --merge --auto "1"
-#      env:
-#        GH_TOKEN: ${{ secrets.PAT }}
-#      env:
-#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        gh pr create --base prod --head dev --title "Automated PR: Update Hausing Scraper ($current_time)" --body "Automated update of Hausing Scraper results" --label "housing pr"
+
+    - name: Auto-merge PR with label 'housing mr'
+      run: |
+        # Authenticate using GITHUB_TOKEN
+        echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+
+        # Find the PR with the label "housing mr"
+        pr_number=$(gh pr list --base prod --label "housing mr" --json number --jq '.[0].number')
+
+        # Check if the PR exists, then merge it
+        if [ -n "$pr_number" ]; then
+          gh pr merge $pr_number --squash --admin
+          echo "PR #$pr_number merged successfully."
+        else
+          echo "No PR found with label 'housing mr'."
+        fi
