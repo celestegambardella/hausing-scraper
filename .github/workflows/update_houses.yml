@@ -70,6 +70,8 @@ jobs:
         cd dist
         current_time=$(date +"%Y-%m-%d %H:%M:%S")
         gh pr create --base prod --head dev --title "Automated PR: Update Hausing Scraper ($current_time)" --body "Automated update of Hausing Scraper results" --label "housing pr"
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Auto-merge PR with label 'housing mr'
       run: |
@@ -84,3 +86,5 @@ jobs:
         else
           echo "No PR found with label 'housing mr'."
         fi
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
