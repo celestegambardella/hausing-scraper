@@ -84,14 +84,14 @@ jobs:
     - name: Auto-merge PR with label 'housing pr'
       run: |
         # Wait a moment to ensure the PR has been created
-        sleep 5
+        # sleep 2
         cd dist
         # Find the PR with the label "housing pr"
         pr_number=$(gh pr list --base prod --label "housing pr" --json number --jq '.[0].number')
 
         # Check if the PR exists, then merge it
         if [ -n "$pr_number" ]; then
-          gh pr merge $pr_number --squash --admin --auto
+          gh pr merge $pr_number --squash --admin
           echo "PR #$pr_number merged successfully."
         else
           echo "No PR found with label 'housing pr'."
