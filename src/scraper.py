@@ -12,7 +12,7 @@ import os
 # Define base directories
 BASE_DIR = os.getcwd()
 OUTPUT_DIR = "output/"
-JSON_FILE_PATH = OUTPUT_DIR + "houses.json"
+JSON_FILE_PATH = OUTPUT_DIR + "listings.json"
 MD_FILE_PATH = OUTPUT_DIR + "hausing-scraper.md"
 
 def get_addresses(address_divs):
