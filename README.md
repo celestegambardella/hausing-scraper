@@ -10,6 +10,7 @@
       + [1. Production Workflow](#1-production-workflow)
       + [2. Development Workflow](#2-development-workflow)
    * [Upcoming Features](#upcoming-features)
+      + [Additional Websites Support](#additional-websites-support)
       + [Filtering Results](#filtering-results)
    * [License](#license)
 
@@ -85,6 +86,12 @@ Workflow File: [`.github/workflows/dev.yml`](.github/workflows/dev.yml)
 
 
 ## Upcoming Features
+
+
+### Additional Websites Support
+
+Support other website scraping like http://pararius.com and https://www.funda.nl in results
+
 
 ### Filtering Results
 
