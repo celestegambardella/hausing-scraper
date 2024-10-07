@@ -100,8 +100,8 @@ def load_existing_listings(file_name=JSON_FILE_PATH):
         print("Error reading the JSON file.")  # Handle JSON decode errors
         return {}
 
-def write_old_listings(file, data):
-    """Writes previously found listings to the markdown file."""
+def write_listings(file, data):
+    """Writes found listings to the markdown file."""
     file.write("\n### Previously Found Listings\n")
     for address, details in data.items():
         price = f"€{details['price']}/month"
@@ -130,18 +130,13 @@ def update_markdown(new_listings, existing_data):
         short_time = datetime.now(amsterdam_tz).strftime('%b %d %Y %H:%M')
         if new_listings:
             md_file.write("\n### [New] Listings\n")
-            for address, details in new_listings.items():
-                price = f"€{details['price']}/month"
-                beds = f"Beds: {details['beds']}"
-                url = f"[View Property]({details['url']})"
-                google_maps = f"[Google Maps]({details['google_maps']})"
-                md_file.write(f"#### {address}\n- {price}\n- {beds}\n- {url}\n- {google_maps}\n")
+            write_listings(md_file, new_listings)
             if existing_data:
-                write_old_listings(md_file, existing_data)
+                write_listings(md_file, existing_data)
         else:
             md_file.write("\n## No New Listings Found\n")
             if existing_data:
-                write_old_listings(md_file, existing_data)
+                write_listings(md_file, existing_data)
 
         md_file.write(f"---\n###### [`www.hausing.com`]({base_url})\n")
         md_file.write(f"\n`{short_time}`")
